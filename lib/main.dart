@@ -33,16 +33,16 @@ class MyHomePage extends StatefulWidget {
   }
 }
 
-class _GyroState {
+class _LevelState {
   final double angle;
   final double radius;
 
-  _GyroState(this.angle, this.radius);
+  _LevelState(this.angle, this.radius);
 
-  factory _GyroState.fromGyroEvent(double x, y, z) {
+  factory _LevelState.fromGyroEvent(double x, y, z) {
     final double a = atan2(y, x);
     final double r = (x.abs() + y.abs()) / (x.abs() + y.abs() + z.abs());
-    return _GyroState(round(a), round(r));
+    return _LevelState(round(a), round(r));
   }
 
   @override
@@ -56,10 +56,10 @@ class _MyHomePageState extends State<MyHomePage> {
   double _yAccel = 0;
   double _zAccel = 0;
 
-  _GyroState _state = _GyroState(0, 0);
+  _LevelState _state = _LevelState(0, 0);
 
-  Stream<AccelerometerEvent> _accelStream = accelerometerEvents;
-  AccelerometerEvent _event = AccelerometerEvent(0, 0, 0);
+  final Stream<AccelerometerEvent> _accelStream = accelerometerEvents;
+  AccelerometerEvent _event = AccelerometerEvent(0, 0, 9.8);
   StreamSubscription<AccelerometerEvent>? _accelSubscription;
 
   _MyHomePageState() {
@@ -76,16 +76,40 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
+    final double width = min(
+        MediaQuery.of(context).size.width, MediaQuery.of(context).size.height);
+
+    final double w = width / 2;
+    final double h = sin(_state.angle) * _state.radius * w;
+    final double v = cos(_state.angle) * _state.radius * w;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Column(
-        children: [Text('$_state, $_xAccel, $_yAccel, $_zAccel ')],
-      ),
+      body: Center(
+          child: Stack(
+        alignment: Alignment.center,
+        children: <Widget>[
+          Container(
+              width: width,
+              decoration: const BoxDecoration(
+                color: Colors.black,
+                shape: BoxShape.circle,
+              )),
+          Container(
+            padding: EdgeInsets.only(
+                top: max(0, -h),
+                left: max(0, v),
+                bottom: max(0, h),
+                right: max(0, -v)),
+            child: Container(
+                width: w,
+                decoration: const BoxDecoration(
+                  color: Colors.blue,
+                  shape: BoxShape.circle,
+                )),
+          ),
+          Text(_state.toString()),
+        ],
+      )),
     );
   }
 
@@ -95,7 +119,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _yAccel = _event.y;
       _zAccel = _event.z;
 
-      _state = _GyroState.fromGyroEvent(_xAccel, _yAccel, _zAccel);
+      _state = _LevelState.fromGyroEvent(_xAccel, _yAccel, _zAccel);
     });
   }
 }
