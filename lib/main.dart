@@ -11,8 +11,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Open Level',
       theme: ThemeData(
-        primarySwatch: Colors.deepOrange,
-      ),
+          primarySwatch: Colors.deepOrange,
+          scaffoldBackgroundColor: Colors.black87),
       home: const MyHomePage(title: 'Open Level'),
     );
   }
@@ -59,7 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
   _LevelState _state = _LevelState(0, 0);
 
   final Stream<AccelerometerEvent> _accelStream = accelerometerEvents;
-  AccelerometerEvent _event = AccelerometerEvent(0, 0, 9.8);
+  AccelerometerEvent _event = AccelerometerEvent(2, 3, 4.8);
   StreamSubscription<AccelerometerEvent>? _accelSubscription;
 
   _MyHomePageState() {
@@ -83,31 +83,56 @@ class _MyHomePageState extends State<MyHomePage> {
     final double h = sin(_state.angle) * _state.radius * w;
     final double v = cos(_state.angle) * _state.radius * w;
 
+    final Widget front = Container(
+        width: width / 2 * 0.999,
+        decoration: const BoxDecoration(
+          color: Colors.black,
+          shape: BoxShape.circle,
+        ));
+    final Widget back = Container(
+        width: width,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(width: 1, color: Colors.blue),
+        ));
+    final Widget bubble = Container(
+      padding: EdgeInsets.only(
+          top: max(0, -h),
+          left: max(0, v),
+          bottom: max(0, h),
+          right: max(0, -v)),
+      child: Container(
+          width: w,
+          decoration: const BoxDecoration(
+            color: Colors.blue,
+            shape: BoxShape.circle,
+          )),
+    );
+
+    const indicatorStyle = TextStyle(color: Colors.grey, fontSize: 36);
+    final Widget indicators = Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Text(
+          getHorizontalIndicator(_state),
+          style: indicatorStyle,
+        ),
+        Text(
+          getVerticalIndicator(_state),
+          style: indicatorStyle,
+        ),
+      ],
+    );
     return Scaffold(
       body: Center(
           child: Stack(
         alignment: Alignment.center,
         children: <Widget>[
-          Container(
-              width: width,
-              decoration: const BoxDecoration(
-                color: Colors.black,
-                shape: BoxShape.circle,
-              )),
-          Container(
-            padding: EdgeInsets.only(
-                top: max(0, -h),
-                left: max(0, v),
-                bottom: max(0, h),
-                right: max(0, -v)),
-            child: Container(
-                width: w,
-                decoration: const BoxDecoration(
-                  color: Colors.blue,
-                  shape: BoxShape.circle,
-                )),
-          ),
+          back,
+          bubble,
+          front,
           Text(_state.toString()),
+          indicators,
         ],
       )),
     );
@@ -126,4 +151,24 @@ class _MyHomePageState extends State<MyHomePage> {
 
 double round(double input) {
   return (input * 100).roundToDouble() / 100;
+}
+
+final double _indicatorThreshold = 0.01;
+
+String getHorizontalIndicator(_LevelState state) {
+  final double value = sin(state.angle) * state.radius;
+  if (value.abs() < _indicatorThreshold) {
+    return "↔ 0.00";
+  }
+
+  return (value > 0 ? "←" : "→") + " " + value.abs().toStringAsFixed(2);
+}
+
+String getVerticalIndicator(_LevelState state) {
+  final double value = cos(state.angle) * state.radius;
+  if (value.abs() < _indicatorThreshold) {
+    return "↕ 0.00";
+  }
+
+  return (value > 0 ? "↓" : "↑") + " " + value.abs().toStringAsFixed(2);
 }
