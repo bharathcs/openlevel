@@ -45,6 +45,8 @@ android {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "me.bhcs.openlevel"
         minSdkVersion flutter.minSdkVersion
+        // minSdkVersion 16 // Need to manually set to 16 when running flutter packages pub run flutter_launcher_icons:main
+        // See: https://github.com/fluttercommunity/flutter_launcher_icons/issues/324
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
