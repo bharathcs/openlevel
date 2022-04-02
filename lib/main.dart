@@ -59,7 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
   _LevelState _state = _LevelState(0, 0);
 
   final Stream<AccelerometerEvent> _accelStream = accelerometerEvents;
-  AccelerometerEvent _event = AccelerometerEvent(2, 3, 4.8);
+  AccelerometerEvent _event = AccelerometerEvent(0, 0, 9.8);
   StreamSubscription<AccelerometerEvent>? _accelSubscription;
 
   _MyHomePageState() {
@@ -84,7 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final double v = cos(_state.angle) * _state.radius * w;
 
     final Widget front = Container(
-        width: width / 2 * 0.999,
+        width: width / 2 * 0.99,
         decoration: const BoxDecoration(
           color: Colors.black,
           shape: BoxShape.circle,
@@ -153,10 +153,10 @@ double round(double input) {
   return (input * 100).roundToDouble() / 100;
 }
 
-final double _indicatorThreshold = 0.01;
+const double _indicatorThreshold = 0.01;
 
 String getHorizontalIndicator(_LevelState state) {
-  final double value = sin(state.angle) * state.radius;
+  final double value = cos(state.angle) * state.radius;
   if (value.abs() < _indicatorThreshold) {
     return "↔ 0.00";
   }
@@ -165,7 +165,7 @@ String getHorizontalIndicator(_LevelState state) {
 }
 
 String getVerticalIndicator(_LevelState state) {
-  final double value = cos(state.angle) * state.radius;
+  final double value = sin(state.angle) * state.radius;
   if (value.abs() < _indicatorThreshold) {
     return "↕ 0.00";
   }
